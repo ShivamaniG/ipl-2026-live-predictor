@@ -27,7 +27,7 @@ class ExtraTreesModel(BaseIPLModel):
             max_features="sqrt",
             class_weight="balanced",   # handles any residual class imbalance
             random_state=RANDOM_STATE,
-            n_jobs=-1,
+            n_jobs=1,
         )
 
 
