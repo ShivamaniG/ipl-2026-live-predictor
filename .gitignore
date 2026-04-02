@@ -38,8 +38,5 @@ data/db/
 
 # Model artifacts (large binary files)
 outputs/models/
-outputs/results/*.png
-
-# Keep prediction results JSON
-!outputs/results/prediction_2026.json
-!outputs/results/model_results.json
+outputs/results/*
+!outputs/results/.gitkeep
