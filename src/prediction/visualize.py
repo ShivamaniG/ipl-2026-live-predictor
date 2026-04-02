@@ -9,8 +9,6 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")  # headless
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import seaborn as sns
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from config import RESULTS_DIR, FEATURES_CSV
@@ -129,6 +127,8 @@ def plot_historical_win_rates(save_path: str = None):
     """Line chart of team win rates per season."""
     df = pd.read_csv(FEATURES_CSV)
     from config import ACTIVE_TEAMS_2026
+    season_min = int(df["season"].min())
+    season_max = int(df["season"].max())
 
     season_rates = {}
     for season, grp in df.groupby("season"):
@@ -150,7 +150,7 @@ def plot_historical_win_rates(save_path: str = None):
 
     ax.set_xlabel("Season", fontsize=13)
     ax.set_ylabel("Win Rate", fontsize=13)
-    ax.set_title("IPL Team Win Rates by Season (2008–2024)", fontsize=15, fontweight="bold")
+    ax.set_title(f"IPL Team Win Rates by Season ({season_min}-{season_max})", fontsize=15, fontweight="bold")
     ax.legend(bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     ax.grid(True, alpha=0.3)
     ax.set_ylim(0, 1.05)
