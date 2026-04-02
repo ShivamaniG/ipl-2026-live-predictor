@@ -17,10 +17,9 @@ RESULTS_DIR    = os.path.join(OUTPUTS_DIR, "results")
 SQLITE_DB_PATH = os.path.join(DB_DIR, "ipl.db")
 
 # ─── Data files ──────────────────────────────────────────────────────────────
-MATCHES_CSV    = os.path.join(RAW_DIR, "matches.csv")
-DELIVERIES_CSV = os.path.join(RAW_DIR, "deliveries.csv")
-PLAYERS_CSV    = os.path.join(RAW_DIR, "players.csv")
-TEAMS_JSON     = os.path.join(RAW_DIR, "teams.json")
+MATCHES_CSV        = os.path.join(RAW_DIR, "matches.csv")
+PLAYER_STATS_CSV   = os.path.join(RAW_DIR, "player_stats.csv")
+TEAMS_JSON         = os.path.join(RAW_DIR, "teams.json")
 
 PROCESSED_MATCHES_CSV   = os.path.join(PROCESSED_DIR, "matches_processed.csv")
 FEATURES_CSV            = os.path.join(PROCESSED_DIR, "features.csv")
@@ -60,6 +59,16 @@ TEAM_ALIASES = {
     "Punjab Kings":              "PBKS",
     "Lucknow Super Giants":      "LSG",
     "Gujarat Titans":            "GT",
+    "Gujarat Lions":             "GL",
+}
+
+# Retired franchise aliases -> map to spiritual successor for ML continuity
+RETIRED_TEAM_MAP = {
+    "DC_OLD": "SRH",   # Deccan Chargers -> Sunrisers Hyderabad (same city)
+    "RPS":    "CSK",   # Rising Pune Supergiant -> CSK returned after ban
+    "GL":     "GT",    # Gujarat Lions -> Gujarat Titans (same city)
+    "PW":     "DC",    # Pune Warriors -> dropped, no direct successor
+    "KTK":    "KTK",   # Kochi Tuskers -> dropped
 }
 
 # Active teams in 2026 (current franchises)
@@ -67,7 +76,7 @@ ACTIVE_TEAMS_2026 = list(TEAMS.keys())
 
 # ─── Seasons ─────────────────────────────────────────────────────────────────
 FIRST_SEASON      = 2008
-LAST_KNOWN_SEASON = 2024
+LAST_KNOWN_SEASON = 2025
 PREDICT_SEASON    = 2026
 
 # ─── Feature Engineering ─────────────────────────────────────────────────────
@@ -89,7 +98,7 @@ MODEL_PARAMS = {
         "min_samples_split": 5,
         "min_samples_leaf": 2,
         "random_state": RANDOM_STATE,
-        "n_jobs": -1,
+        "n_jobs": 1,
     },
     "xgboost": {
         "n_estimators": 300,
