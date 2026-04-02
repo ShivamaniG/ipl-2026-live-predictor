@@ -1,8 +1,10 @@
 """
-IPL 2026 Winner Prediction – Main Entry Point
+IPL 2026 Winner Prediction - Main Entry Point
+
+Uses REAL IPL ball-by-ball data (IPL.csv, 2008-2025, 1169 matches).
 
 Usage:
-  python main.py --mode setup      # Create datasets and populate database
+  python main.py --mode setup      # Extract data from IPL.csv and engineer features
   python main.py --mode train      # Train all models
   python main.py --mode predict    # Predict 2026 winner
   python main.py --mode all        # Run full pipeline end-to-end
@@ -16,7 +18,7 @@ import time
 
 from config import LOG_FILE, LOG_LEVEL
 
-# ─── Logging setup ─────────────────────────────────────────────────────────────
+# Logging setup
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL, logging.INFO),
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -29,26 +31,22 @@ logger = logging.getLogger(__name__)
 
 
 def mode_setup():
-    logger.info("=== SETUP: Using raw dataset and populating database ===")
+    logger.info("=== SETUP: Extracting real IPL data and building features ===")
     t0 = time.time()
 
-    from config import MATCHES_CSV, TEAMS_JSON
-    from src.data.db_setup       import setup_database
-    from src.data.ingest         import run_ingestion
-    from src.data.preprocess     import run_preprocessing
-    from src.features.engineer   import run_feature_engineering
+    from src.data.create_dataset import (
+        save_teams_json, build_all_matches, save_matches_csv, save_player_stats_csv,
+    )
+    from src.data.db_setup     import setup_database
+    from src.data.ingest       import run_ingestion
+    from src.data.preprocess   import run_preprocessing
+    from src.features.engineer import run_feature_engineering
 
-    logger.info("Step 1/5: Validating raw dataset files...")
-    if not os.path.exists(MATCHES_CSV):
-        raise FileNotFoundError(
-            f"Raw matches file not found: {MATCHES_CSV}. "
-            "Add a real IPL dataset at data/raw/matches.csv and rerun setup."
-        )
-    if not os.path.exists(TEAMS_JSON):
-        raise FileNotFoundError(
-            f"Teams file not found: {TEAMS_JSON}. "
-            "Add team metadata at data/raw/teams.json and rerun setup."
-        )
+    logger.info("Step 1/5: Extracting match data from IPL.csv...")
+    save_teams_json()
+    matches, player_stats = build_all_matches(return_format="dataframes")
+    save_matches_csv(matches)
+    save_player_stats_csv(player_stats)
 
     logger.info("Step 2/5: Creating SQLite database schema...")
     setup_database()
@@ -101,13 +99,16 @@ def mode_all():
     mode_setup()
     mode_train()
     rankings = mode_predict()
-    mode_visualize()
+    try:
+        mode_visualize()
+    except Exception as e:
+        logger.warning(f"Visualization failed (non-critical): {e}")
     return rankings
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="IPL 2026 Winner Prediction",
+        description="IPL 2026 Winner Prediction (Real Data)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
