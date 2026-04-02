@@ -73,7 +73,7 @@ class BaseIPLModel(ABC):
     def cross_validate(self, df: pd.DataFrame) -> dict:
         X, y = self.get_X_y(df)
         cv = StratifiedKFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
-        scores = cross_val_score(self.model, X, y, cv=cv, scoring="accuracy", n_jobs=-1)
+        scores = cross_val_score(self.model, X, y, cv=cv, scoring="accuracy", n_jobs=1)
         return {
             "cv_mean": round(scores.mean(), 4),
             "cv_std":  round(scores.std(), 4),
