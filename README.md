@@ -205,6 +205,21 @@ python main.py --mode live --retrain  # Also retrain models (after ~30 matches)
 python main.py --mode all          # Full pipeline end-to-end
 ```
 
+## Deploy on Streamlit Cloud
+
+1. Push this repo to your GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Click **"New app"**
+4. Select your repo, branch `main`, file `app.py`
+5. Go to **Advanced settings** > **Secrets** and add:
+   ```toml
+   IPL_ADMIN_PASSWORD = "your_secret_password"
+   CRICAPI_KEY = "your_api_key"
+   ```
+6. Click **Deploy**
+
+The app auto-detects first run and builds models from scratch (~3-5 minutes). After that it loads instantly.
+
 ## Tests
 
 ```bash

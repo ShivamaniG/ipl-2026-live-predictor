@@ -22,7 +22,30 @@ from config import (
 )
 
 HISTORY_DIR = os.path.join(LIVE_DIR, "history")
-ADMIN_PASSWORD = os.environ.get("IPL_ADMIN_PASSWORD", "admin")
+
+# Read password from Streamlit secrets (cloud) or env var (local)
+def _get_admin_password():
+    try:
+        return st.secrets["IPL_ADMIN_PASSWORD"]
+    except (KeyError, FileNotFoundError):
+        return os.environ.get("IPL_ADMIN_PASSWORD", "admin")
+
+ADMIN_PASSWORD = _get_admin_password()
+
+
+def ensure_setup():
+    """Auto-run the pipeline if models don't exist (first deploy on Streamlit Cloud)."""
+    from config import MODELS_DIR, FEATURES_CSV
+    ensemble_path = os.path.join(MODELS_DIR, "ensemble.pkl")
+    if not os.path.exists(ensemble_path) or not os.path.exists(FEATURES_CSV):
+        st.info("First run detected. Setting up models... (this takes ~3-5 minutes)")
+        with st.spinner("Running setup + training pipeline..."):
+            from main import mode_setup, mode_train, mode_predict
+            mode_setup()
+            mode_train()
+            mode_predict()
+        st.success("Setup complete!")
+        st.rerun()
 
 # ---------------------------------------------------------------------------
 # Data loaders (cached)
@@ -550,6 +573,9 @@ def _run_pipeline_retrain():
 
 def main():
     st.set_page_config(page_title="IPL 2026 Predictions", page_icon="🏏", layout="wide")
+
+    # Auto-setup on first deploy
+    ensure_setup()
 
     # Navigation
     page = st.sidebar.radio("Navigate", [
