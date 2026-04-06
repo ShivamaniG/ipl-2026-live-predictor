@@ -30,6 +30,7 @@ env/
 
 # Logs
 *.log
+ipl_prediction.log
 
 # Data outputs (generated - not committed to keep repo lean)
 data/raw/*.csv
@@ -41,3 +42,9 @@ data/db/
 outputs/models/
 outputs/results/*
 !outputs/results/.gitkeep
+
+# Live data (local runtime, not committed)
+data/live/api_cache.json
+
+# Streamlit secrets (never commit)
+.streamlit/secrets.toml
