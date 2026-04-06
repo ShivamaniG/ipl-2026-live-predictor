@@ -1,0 +1,138 @@
+{
+  "date": "2026-04-07",
+  "calls_today": 3,
+  "results": [
+    {
+      "date": "2026-04-05",
+      "team1_full": "Royal Challengers Bengaluru",
+      "team2_full": "Chennai Super Kings",
+      "winner_full": "Royal Challengers Bengaluru",
+      "venue": "M.Chinnaswamy Stadium, Bengaluru",
+      "status_text": "Royal Challengers Bengaluru won by 43 runs",
+      "win_by_runs": 43,
+      "win_by_wickets": 0,
+      "toss_winner": "Chennai Super Kings",
+      "toss_choice": "field"
+    },
+    {
+      "date": "2026-04-05",
+      "team1_full": "Sunrisers Hyderabad",
+      "team2_full": "Lucknow Super Giants",
+      "winner_full": "Lucknow Super Giants",
+      "venue": "Rajiv Gandhi International Stadium, Hyderabad",
+      "status_text": "Lucknow Super Giants won by 5 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 5,
+      "toss_winner": "Lucknow Super Giants",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-04-04",
+      "team1_full": "Gujarat Titans",
+      "team2_full": "Rajasthan Royals",
+      "winner_full": "Rajasthan Royals",
+      "venue": "Narendra Modi Stadium, Ahmedabad",
+      "status_text": "Rajasthan Royals won by 6 runs",
+      "win_by_runs": 6,
+      "win_by_wickets": 0,
+      "toss_winner": "Rajasthan Royals",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-04-04",
+      "team1_full": "Delhi Capitals",
+      "team2_full": "Mumbai Indians",
+      "winner_full": "Delhi Capitals",
+      "venue": "Arun Jaitley Stadium, Delhi",
+      "status_text": "Delhi Capitals won by 6 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 6,
+      "toss_winner": "Delhi Capitals",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-04-03",
+      "team1_full": "Chennai Super Kings",
+      "team2_full": "Punjab Kings",
+      "winner_full": "Punjab Kings",
+      "venue": "MA Chidambaram Stadium, Chennai",
+      "status_text": "Punjab Kings won by 5 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 5,
+      "toss_winner": "Chennai Super Kings",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-04-02",
+      "team1_full": "Kolkata Knight Riders",
+      "team2_full": "Sunrisers Hyderabad",
+      "winner_full": "Sunrisers Hyderabad",
+      "venue": "Eden Gardens, Kolkata",
+      "status_text": "Sunrisers Hyderabad won by 65 runs",
+      "win_by_runs": 65,
+      "win_by_wickets": 0,
+      "toss_winner": "Sunrisers Hyderabad",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-04-01",
+      "team1_full": "Lucknow Super Giants",
+      "team2_full": "Delhi Capitals",
+      "winner_full": "Delhi Capitals",
+      "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+      "status_text": "Delhi Capitals won by 6 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 6,
+      "toss_winner": "Lucknow Super Giants",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-03-31",
+      "team1_full": "Punjab Kings",
+      "team2_full": "Gujarat Titans",
+      "winner_full": "Punjab Kings",
+      "venue": "Maharaja Yadavindra Singh International Cricket Stadium, Mullanpur, New Chandigarh",
+      "status_text": "Punjab Kings won by 3 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 3,
+      "toss_winner": "Gujarat Titans",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-03-30",
+      "team1_full": "Rajasthan Royals",
+      "team2_full": "Chennai Super Kings",
+      "winner_full": "Rajasthan Royals",
+      "venue": "Barsapara Cricket Stadium, Guwahati",
+      "status_text": "Rajasthan Royals won by 8 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 8,
+      "toss_winner": "Rajasthan Royals",
+      "toss_choice": "field"
+    },
+    {
+      "date": "2026-03-29",
+      "team1_full": "Mumbai Indians",
+      "team2_full": "Kolkata Knight Riders",
+      "winner_full": "Mumbai Indians",
+      "venue": "Wankhede Stadium, Mumbai",
+      "status_text": "Mumbai Indians won by 6 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 6,
+      "toss_winner": "Kolkata Knight Riders",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-03-28",
+      "team1_full": "Royal Challengers Bengaluru",
+      "team2_full": "Sunrisers Hyderabad",
+      "winner_full": "Royal Challengers Bengaluru",
+      "venue": "M.Chinnaswamy Stadium, Bengaluru",
+      "status_text": "Royal Challengers Bengaluru won by 6 wkts",
+      "win_by_runs": 0,
+      "win_by_wickets": 6,
+      "toss_winner": "Royal Challengers Bengaluru",
+      "toss_choice": "field"
+    }
+  ]
+}

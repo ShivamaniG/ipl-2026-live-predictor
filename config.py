@@ -12,6 +12,7 @@ DB_DIR         = os.path.join(DATA_DIR, "db")
 OUTPUTS_DIR    = os.path.join(BASE_DIR, "outputs")
 MODELS_DIR     = os.path.join(OUTPUTS_DIR, "models")
 RESULTS_DIR    = os.path.join(OUTPUTS_DIR, "results")
+LIVE_DIR       = os.path.join(DATA_DIR, "live")
 
 # ─── Database ────────────────────────────────────────────────────────────────
 SQLITE_DB_PATH = os.path.join(DB_DIR, "ipl.db")
@@ -24,6 +25,16 @@ TEAMS_JSON         = os.path.join(RAW_DIR, "teams.json")
 PROCESSED_MATCHES_CSV   = os.path.join(PROCESSED_DIR, "matches_processed.csv")
 FEATURES_CSV            = os.path.join(PROCESSED_DIR, "features.csv")
 TEAM_STATS_CSV          = os.path.join(PROCESSED_DIR, "team_stats.csv")
+
+# ─── Live Score Integration ──────────────────────────────────────────────────
+SCHEDULE_CSV       = os.path.join(BASE_DIR, "ipl-2026-UTC.csv")
+COMPLETED_2026_CSV = os.path.join(LIVE_DIR, "completed_2026.csv")
+PREDICTIONS_LOG    = os.path.join(LIVE_DIR, "predictions_log.json")
+API_CACHE          = os.path.join(LIVE_DIR, "api_cache.json")
+
+CRICAPI_KEY        = os.environ.get("CRICAPI_KEY", "")
+CRICAPI_BASE_URL   = "https://api.cricapi.com/v1"
+ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/personalized/v2/scoreboard/header"
 
 # ─── IPL Teams ────────────────────────────────────────────────────────────────
 TEAMS = {
@@ -73,6 +84,28 @@ RETIRED_TEAM_MAP = {
 
 # Active teams in 2026 (current franchises)
 ACTIVE_TEAMS_2026 = list(TEAMS.keys())
+
+# Reverse lookup: full name -> abbreviation (for API normalization)
+FULL_NAME_TO_ABBR = {v: k for k, v in TEAMS.items()}
+FULL_NAME_TO_ABBR.update({k: v for k, v in TEAM_ALIASES.items()})
+
+# Schedule venue name mapping (CSV has truncated names)
+SCHEDULE_VENUE_MAP = {
+    "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick": "BRSABV Ekana Cricket Stadium",
+    "Shaheed Veer Narayan Singh International Cricket S":  "Shaheed Veer Narayan Singh International Cricket Stadium",
+    "Himachal Pradesh Cricket Association Stadium":        "Himachal Pradesh Cricket Association Stadium",
+    "New International Cricket Stadium":                   "Punjab Cricket Association IS Bindra Stadium",
+    "M Chinnaswamy Stadium":                               "M Chinnaswamy Stadium",
+    "Wankhede Stadium":                                    "Wankhede Stadium",
+    "Eden Gardens":                                        "Eden Gardens",
+    "MA Chidambaram Stadium":                              "MA Chidambaram Stadium",
+    "Narendra Modi Stadium":                               "Narendra Modi Stadium",
+    "Rajiv Gandhi International Stadium":                  "Rajiv Gandhi International Cricket Stadium",
+    "Rajiv Gandhi International Cricket Stadium":          "Rajiv Gandhi International Cricket Stadium",
+    "ACA Stadium":                                         "Barsapara Cricket Stadium",
+    "Arun Jaitley Stadium":                                "Arun Jaitley Stadium",
+    "Sawai Mansingh Stadium":                              "Sawai Mansingh Stadium",
+}
 
 # ─── Seasons ─────────────────────────────────────────────────────────────────
 FIRST_SEASON      = 2008

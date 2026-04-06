@@ -95,6 +95,19 @@ def mode_visualize():
     generate_all_charts()
 
 
+def mode_live(args):
+    logger.info("=== LIVE: Fetching scores and updating predictions ===")
+    from src.live.scheduler import run_live_update
+    from config import CRICAPI_KEY
+
+    api_key = getattr(args, "api_key", None) or CRICAPI_KEY
+    retrain = getattr(args, "retrain", False)
+    dry_run = getattr(args, "dry_run", False)
+
+    results = run_live_update(api_key=api_key, retrain=retrain, dry_run=dry_run)
+    return results
+
+
 def mode_all():
     mode_setup()
     mode_train()
@@ -114,10 +127,16 @@ def parse_args():
     )
     parser.add_argument(
         "--mode",
-        choices=["setup", "train", "predict", "visualize", "all"],
+        choices=["setup", "train", "predict", "visualize", "live", "all"],
         default="all",
         help="Pipeline mode to run (default: all)",
     )
+    parser.add_argument("--api-key", dest="api_key", default=None,
+                        help="CricketData.org API key for live mode")
+    parser.add_argument("--retrain", action="store_true",
+                        help="Retrain models after adding live results")
+    parser.add_argument("--dry-run", dest="dry_run", action="store_true",
+                        help="Fetch results without updating files (live mode)")
     return parser.parse_args()
 
 
@@ -133,5 +152,7 @@ if __name__ == "__main__":
         mode_predict()
     elif args.mode == "visualize":
         mode_visualize()
+    elif args.mode == "live":
+        mode_live(args)
     elif args.mode == "all":
         mode_all()
