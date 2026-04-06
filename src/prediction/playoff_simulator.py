@@ -162,6 +162,107 @@ def save_mc_results(rankings: list, win_prob_matrix: dict):
     print(f"Monte Carlo results saved: {path}")
 
 
+# ---------------------------------------------------------------------------
+# Schedule-aware partial-season Monte Carlo
+# ---------------------------------------------------------------------------
+
+def simulate_partial_group_stage(schedule_df, completed_df,
+                                  win_prob_matrix: dict,
+                                  rng: np.random.Generator) -> dict:
+    """
+    Simulate group stage using the actual 2026 schedule.
+    Completed matches use deterministic outcomes.
+    Remaining matches sample from the win probability matrix.
+    """
+    points = defaultdict(int)
+    nrr    = defaultdict(float)
+
+    completed_winners = {}
+    if completed_df is not None and len(completed_df) > 0:
+        for _, row in completed_df.iterrows():
+            completed_winners[int(row["match_number"])] = row["winner"]
+
+    for _, match in schedule_df.iterrows():
+        t1 = match["home_team"]
+        t2 = match["away_team"]
+        match_num = int(match["match_number"])
+
+        if match_num in completed_winners:
+            winner = completed_winners[match_num]
+            loser = t2 if winner == t1 else t1
+        else:
+            p = win_prob_matrix.get(t1, {}).get(t2, 0.5)
+            if rng.random() < p:
+                winner, loser = t1, t2
+            else:
+                winner, loser = t2, t1
+
+        points[winner] += 2
+        nrr[winner]    += rng.uniform(0.1, 1.5)
+        nrr[loser]     -= rng.uniform(0.1, 1.5)
+
+    standings = sorted(ACTIVE_TEAMS_2026,
+                       key=lambda t: (points[t], nrr[t]),
+                       reverse=True)
+    return {t: rank + 1 for rank, t in enumerate(standings)}
+
+
+def run_partial_monte_carlo(schedule_df, completed_df,
+                             win_prob_matrix: dict,
+                             n_iterations: int = N_ITERATIONS,
+                             seed: int = RANDOM_SEED) -> dict:
+    """
+    Monte Carlo with actual schedule + completed results locked in.
+    Returns championship probability per team.
+    """
+    rng = np.random.default_rng(seed)
+    champion_count = defaultdict(int)
+
+    for _ in range(n_iterations):
+        standings = simulate_partial_group_stage(
+            schedule_df, completed_df, win_prob_matrix, rng)
+        champion = simulate_playoffs(standings, win_prob_matrix, rng)
+        champion_count[champion] += 1
+
+    return {t: champion_count[t] / n_iterations for t in ACTIVE_TEAMS_2026}
+
+
+def predict_2026_partial_monte_carlo(schedule_df, completed_df) -> tuple:
+    """
+    Partial-season Monte Carlo prediction.
+    Returns (rankings, win_prob_matrix).
+    """
+    from src.models.ensemble_model import EnsembleModel
+    from src.prediction.predict_2026 import (
+        rank_predictions, bayesian_update_dynamic,
+    )
+    from config import PROCESSED_MATCHES_CSV
+
+    matches_df = pd.read_csv(PROCESSED_MATCHES_CSV)
+
+    model = EnsembleModel()
+    model.load()
+
+    print("Building win probability matrix...")
+    win_prob_matrix = build_win_prob_matrix(model, matches_df)
+
+    matches_completed = len(completed_df) if completed_df is not None else 0
+    print(f"Running {N_ITERATIONS:,} Monte Carlo iterations "
+          f"({matches_completed} matches locked in)...")
+
+    mc_probs = run_partial_monte_carlo(
+        schedule_df, completed_df, win_prob_matrix)
+
+    final_probs = bayesian_update_dynamic(mc_probs, matches_completed)
+
+    rankings = rank_predictions(final_probs)
+    for r in rankings:
+        r["matches_completed"] = matches_completed
+        r["matches_remaining"] = 70 - matches_completed
+
+    return rankings, win_prob_matrix
+
+
 if __name__ == "__main__":
     rankings, _ = predict_2026_monte_carlo()
     from src.prediction.predict_2026 import print_predictions

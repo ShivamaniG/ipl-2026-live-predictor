@@ -289,7 +289,7 @@ def print_predictions(rankings: list):
     print(f"{'Rank':<6} {'Team':<35} {'Win Probability':>15}")
     print("-"*65)
     for r in rankings:
-        bar = "\u2588" * int(r["win_probability"] / 2)
+        bar = "#" * int(r["win_probability"] / 2)
         print(f"  {r['rank']:<4} {r['team_name']:<35} {r['win_probability']:>6.2f}%  {bar}")
     print("="*65)
     w = rankings[0]
@@ -311,6 +311,151 @@ def save_predictions(rankings: list):
             "rankings": rankings,
         }, f, indent=2)
     print(f"\nPredictions saved: {path}")
+
+
+# ---------------------------------------------------------------------------
+# Partial-season prediction (for live score integration)
+# ---------------------------------------------------------------------------
+
+def get_dynamic_bayesian_weights(matches_completed: int) -> dict:
+    """
+    Bayesian prior weights shift toward the model as the season progresses.
+    More real data => trust the model more, rely on domain priors less.
+    """
+    if matches_completed <= 20:
+        return {"squad": 0.35, "recent_form": 0.30, "model": 0.30, "playoff": 0.05}
+    elif matches_completed <= 45:
+        return {"squad": 0.20, "recent_form": 0.20, "model": 0.55, "playoff": 0.05}
+    elif matches_completed <= 56:
+        return {"squad": 0.10, "recent_form": 0.10, "model": 0.75, "playoff": 0.05}
+    else:
+        return {"squad": 0.05, "recent_form": 0.05, "model": 0.85, "playoff": 0.05}
+
+
+def bayesian_update_dynamic(model_probs: dict, matches_completed: int) -> dict:
+    """
+    Like bayesian_update() but with dynamic weights based on season progress.
+    """
+    def normalize(d):
+        total = sum(d.values())
+        return {k: v / total for k, v in d.items()} if total > 0 else d
+
+    weights = get_dynamic_bayesian_weights(matches_completed)
+
+    sq_prior = normalize(SQUAD_STRENGTH_2026)
+
+    recent_form_raw = {}
+    for t in ACTIVE_TEAMS_2026:
+        playoff_score = PLAYOFF_RATE_3YR.get(t, 0)
+        rank_score = SEASON_2025_RANK_SCORE.get(t, 5) / 10
+        recent_form_raw[t] = playoff_score * 0.6 + rank_score * 0.4
+    recent_prior = normalize({t: max(v, 0.01) for t, v in recent_form_raw.items()})
+
+    pl_prior = normalize({t: max(v, 0.01) for t, v in PLAYOFF_RATE_3YR.items()})
+    model_norm = normalize(model_probs)
+
+    combined = {}
+    for t in ACTIVE_TEAMS_2026:
+        combined[t] = (
+            weights["squad"]       * sq_prior.get(t, 0) +
+            weights["recent_form"] * recent_prior.get(t, 0) +
+            weights["model"]       * model_norm.get(t, 0) +
+            weights["playoff"]     * pl_prior.get(t, 0)
+        )
+
+    return normalize(combined)
+
+
+def simulate_tournament_with_actuals(model, df: pd.DataFrame,
+                                     completed_results: dict = None) -> dict:
+    """
+    Simulate all round-robin matchups, locking in completed match results.
+
+    Args:
+        completed_results: dict of {frozenset({team1, team2}): winner} for completed matches.
+                          If a matchup is completed, use deterministic probability.
+    """
+    teams = ACTIVE_TEAMS_2026
+    win_probs = {t: [] for t in teams}
+    completed_results = completed_results or {}
+
+    for team1, team2 in itertools.combinations(teams, 2):
+        key = frozenset({team1, team2})
+
+        if key in completed_results:
+            # Use actual result: winner gets 1.0, loser gets 0.0
+            actual_winner = completed_results[key]
+            if actual_winner == team1:
+                win_probs[team1].append(1.0)
+                win_probs[team2].append(0.0)
+            else:
+                win_probs[team1].append(0.0)
+                win_probs[team2].append(1.0)
+        else:
+            # Predict with model
+            feats = build_matchup_features(team1, team2, df)
+            probs = model.predict_proba(feats)
+            avg_t1_wins = probs[:, 1].mean()
+            avg_t2_wins = 1 - avg_t1_wins
+            win_probs[team1].append(avg_t1_wins)
+            win_probs[team2].append(avg_t2_wins)
+
+    return {t: np.mean(v) for t, v in win_probs.items()}
+
+
+def predict_2026_partial(completed_df=None) -> list:
+    """
+    Partial-season prediction: blend actual completed results with model predictions.
+    Used by the live update system.
+
+    Args:
+        completed_df: DataFrame of completed 2026 matches (from completed_2026.csv)
+                     Must have columns: team1, team2, winner
+
+    Returns:
+        Ranked prediction list with metadata.
+    """
+    from src.models.ensemble_model import EnsembleModel
+    from src.models.xgboost_model import XGBoostModel
+
+    matches_df = pd.read_csv(PROCESSED_MATCHES_CSV)
+
+    try:
+        model = EnsembleModel()
+        model.load()
+    except FileNotFoundError:
+        model = XGBoostModel()
+        model.load()
+
+    # Build completed results lookup
+    completed_results = {}
+    matches_completed = 0
+    if completed_df is not None and len(completed_df) > 0:
+        matches_completed = len(completed_df)
+        for _, row in completed_df.iterrows():
+            key = frozenset({row["team1"], row["team2"]})
+            completed_results[key] = row["winner"]
+
+    print(f"\nPartial-season prediction: {matches_completed} matches completed")
+    print("Simulating remaining matchups with model...")
+
+    model_probs = simulate_tournament_with_actuals(model, matches_df, completed_results)
+
+    weights = get_dynamic_bayesian_weights(matches_completed)
+    print(f"Bayesian weights: squad={weights['squad']:.0%}, "
+          f"form={weights['recent_form']:.0%}, "
+          f"model={weights['model']:.0%}")
+
+    final_probs = bayesian_update_dynamic(model_probs, matches_completed)
+
+    rankings = rank_predictions(final_probs)
+
+    # Add metadata
+    for r in rankings:
+        r["matches_completed"] = matches_completed
+        r["matches_remaining"] = 70 - matches_completed
+
+    return rankings
 
 
 if __name__ == "__main__":
