@@ -22,7 +22,7 @@ from config import (
 )
 
 HISTORY_DIR = os.path.join(LIVE_DIR, "history")
-ADMIN_PASSWORD = "ipl2026admin"
+ADMIN_PASSWORD = os.environ.get("IPL_ADMIN_PASSWORD", "admin")
 
 # ---------------------------------------------------------------------------
 # Data loaders (cached)

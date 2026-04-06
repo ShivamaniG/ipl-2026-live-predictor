@@ -98,7 +98,12 @@ streamlit run app.py
 streamlit run app.py
 ```
 
-Open http://localhost:8501. Public pages show predictions, points table, and match results. Admin panel (password: `ipl2026admin`) lets you add results and run the pipeline from the UI.
+Open http://localhost:8501. Public pages show predictions, points table, and match results. Admin panel lets you add results and run the pipeline from the UI.
+
+Set the admin password via environment variable:
+```bash
+export IPL_ADMIN_PASSWORD=your_secret_password
+```
 
 ## How It Works
 
