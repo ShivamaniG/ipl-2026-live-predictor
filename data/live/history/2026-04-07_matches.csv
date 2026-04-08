@@ -1,0 +1,71 @@
+Match,Date,Venue,Home,Away,Predicted Winner,Win Probability,Status
+1,2026-03-28,M Chinnaswamy Stadium,RCB,SRH,RCB,100.0%,Actual
+2,2026-03-29,Wankhede Stadium,MI,KKR,MI,100.0%,Actual
+3,2026-03-30,ACA Stadium,RR,CSK,RR,100.0%,Actual
+4,2026-03-31,New International Cricket Stadium,PBKS,GT,PBKS,100.0%,Actual
+5,2026-04-01,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,DC,DC,100.0%,Actual
+6,2026-04-02,Eden Gardens,KKR,SRH,SRH,100.0%,Actual
+7,2026-04-03,MA Chidambaram Stadium,CSK,PBKS,PBKS,100.0%,Actual
+8,2026-04-04,Arun Jaitley Stadium,DC,MI,DC,100.0%,Actual
+9,2026-04-04,Narendra Modi Stadium,GT,RR,RR,100.0%,Actual
+10,2026-04-05,Rajiv Gandhi International Stadium,SRH,LSG,LSG,100.0%,Actual
+11,2026-04-05,M Chinnaswamy Stadium,RCB,CSK,RCB,100.0%,Actual
+12,2026-04-06,Eden Gardens,KKR,PBKS,-,-,No Result
+13,2026-04-07,ACA Stadium,RR,MI,RR,100.0%,Actual
+14,2026-04-08,Arun Jaitley Stadium,DC,GT,GT,65.9%,Predicted
+15,2026-04-09,Eden Gardens,KKR,LSG,LSG,54.8%,Predicted
+16,2026-04-10,ACA Stadium,RR,RCB,RCB,66.1%,Predicted
+17,2026-04-11,New International Cricket Stadium,PBKS,SRH,PBKS,78.9%,Predicted
+18,2026-04-11,MA Chidambaram Stadium,CSK,DC,DC,60.5%,Predicted
+19,2026-04-12,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,GT,LSG,93.9%,Predicted
+20,2026-04-12,Wankhede Stadium,MI,RCB,MI,89.6%,Predicted
+21,2026-04-13,Rajiv Gandhi International Stadium,SRH,RR,SRH,84.3%,Predicted
+22,2026-04-14,MA Chidambaram Stadium,CSK,KKR,CSK,93.2%,Predicted
+23,2026-04-15,M Chinnaswamy Stadium,RCB,LSG,LSG,69.0%,Predicted
+24,2026-04-16,Wankhede Stadium,MI,PBKS,MI,68.4%,Predicted
+25,2026-04-17,Narendra Modi Stadium,GT,KKR,GT,99.8%,Predicted
+26,2026-04-18,M Chinnaswamy Stadium,RCB,DC,DC,96.9%,Predicted
+27,2026-04-18,Rajiv Gandhi International Stadium,SRH,CSK,SRH,60.8%,Predicted
+28,2026-04-19,Eden Gardens,KKR,RR,KKR,55.8%,Predicted
+29,2026-04-19,New International Cricket Stadium,PBKS,LSG,PBKS,96.7%,Predicted
+30,2026-04-20,Narendra Modi Stadium,GT,MI,GT,68.0%,Predicted
+31,2026-04-21,Rajiv Gandhi International Stadium,SRH,DC,DC,93.5%,Predicted
+32,2026-04-22,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,RR,LSG,99.8%,Predicted
+33,2026-04-23,Wankhede Stadium,MI,CSK,MI,92.6%,Predicted
+34,2026-04-24,M Chinnaswamy Stadium,RCB,GT,GT,98.8%,Predicted
+35,2026-04-25,Arun Jaitley Stadium,DC,PBKS,PBKS,51.8%,Predicted
+36,2026-04-25,Sawai Mansingh Stadium,RR,SRH,RR,81.2%,Predicted
+37,2026-04-26,Narendra Modi Stadium,GT,CSK,GT,99.8%,Predicted
+38,2026-04-26,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,KKR,LSG,99.3%,Predicted
+39,2026-04-27,Arun Jaitley Stadium,DC,RCB,DC,65.0%,Predicted
+40,2026-04-28,New International Cricket Stadium,PBKS,RR,PBKS,97.3%,Predicted
+41,2026-04-29,Wankhede Stadium,MI,SRH,MI,78.3%,Predicted
+42,2026-04-30,Narendra Modi Stadium,GT,RCB,GT,89.1%,Predicted
+43,2026-05-01,Sawai Mansingh Stadium,RR,DC,DC,91.8%,Predicted
+44,2026-05-02,MA Chidambaram Stadium,CSK,MI,CSK,66.9%,Predicted
+45,2026-05-03,Rajiv Gandhi International Stadium,SRH,KKR,SRH,88.8%,Predicted
+46,2026-05-03,Narendra Modi Stadium,GT,PBKS,GT,50.4%,Predicted
+47,2026-05-04,Wankhede Stadium,MI,LSG,MI,70.4%,Predicted
+48,2026-05-05,Arun Jaitley Stadium,DC,CSK,DC,86.8%,Predicted
+49,2026-05-06,Rajiv Gandhi International Stadium,SRH,PBKS,PBKS,86.9%,Predicted
+50,2026-05-07,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,RCB,LSG,92.2%,Predicted
+51,2026-05-08,Arun Jaitley Stadium,DC,KKR,DC,99.3%,Predicted
+52,2026-05-09,Sawai Mansingh Stadium,RR,GT,RR,71.1%,Predicted
+53,2026-05-10,MA Chidambaram Stadium,CSK,LSG,CSK,65.8%,Predicted
+54,2026-05-10,Shaheed Veer Narayan Singh International Cricket S,RCB,MI,MI,97.7%,Predicted
+55,2026-05-11,Himachal Pradesh Cricket Association Stadium,PBKS,DC,DC,66.9%,Predicted
+56,2026-05-12,Narendra Modi Stadium,GT,SRH,GT,85.0%,Predicted
+57,2026-05-13,Shaheed Veer Narayan Singh International Cricket S,RCB,KKR,RCB,83.0%,Predicted
+58,2026-05-14,Himachal Pradesh Cricket Association Stadium,PBKS,MI,MI,94.2%,Predicted
+59,2026-05-15,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,CSK,LSG,98.0%,Predicted
+60,2026-05-16,Eden Gardens,KKR,GT,KKR,66.5%,Predicted
+61,2026-05-17,Himachal Pradesh Cricket Association Stadium,PBKS,RCB,RCB,52.3%,Predicted
+62,2026-05-17,Arun Jaitley Stadium,DC,RR,DC,97.2%,Predicted
+63,2026-05-18,MA Chidambaram Stadium,CSK,SRH,SRH,58.6%,Predicted
+64,2026-05-19,Sawai Mansingh Stadium,RR,LSG,RR,62.7%,Predicted
+65,2026-05-20,Eden Gardens,KKR,MI,MI,82.7%,Predicted
+66,2026-05-21,MA Chidambaram Stadium,CSK,GT,CSK,87.9%,Predicted
+67,2026-05-22,Rajiv Gandhi International Stadium,SRH,RCB,SRH,52.8%,Predicted
+68,2026-05-23,Bharat Ratna Shri Atal Bihari Vajpayee Ekana Crick,LSG,PBKS,PBKS,80.7%,Predicted
+69,2026-05-24,Wankhede Stadium,MI,RR,MI,90.0%,Predicted
+70,2026-05-24,Eden Gardens,KKR,DC,DC,97.4%,Predicted

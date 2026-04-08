@@ -2,12 +2,3 @@ match_number,date,team1,team2,winner,win_by_runs,win_by_wickets,venue,toss_winne
 1,2026-03-28,RCB,SRH,RCB,0,6,"M.Chinnaswamy Stadium, Bengaluru",RCB,field
 2,2026-03-29,MI,KKR,MI,0,6,"Wankhede Stadium, Mumbai",KKR,bat
 3,2026-03-30,RR,CSK,RR,0,8,"Barsapara Cricket Stadium, Guwahati",RR,field
-4,2026-03-31,PBKS,GT,PBKS,0,3,"Maharaja Yadavindra Singh International Cricket Stadium, Mullanpur, New Chandigarh",GT,bat
-5,2026-04-01,LSG,DC,DC,0,6,"Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",LSG,bat
-6,2026-04-02,KKR,SRH,SRH,65,0,"Eden Gardens, Kolkata",SRH,bat
-7,2026-04-03,CSK,PBKS,PBKS,0,5,"MA Chidambaram Stadium, Chennai",CSK,bat
-8,2026-04-04,DC,MI,DC,0,6,"Arun Jaitley Stadium, Delhi",DC,bat
-9,2026-04-04,GT,RR,RR,6,0,"Narendra Modi Stadium, Ahmedabad",RR,bat
-10,2026-04-05,SRH,LSG,LSG,0,5,"Rajiv Gandhi International Stadium, Hyderabad",LSG,bat
-11,2026-04-05,RCB,CSK,RCB,43,0,"M.Chinnaswamy Stadium, Bengaluru",CSK,field
-12,2026-04-06,KKR,PBKS,NR,0,0,"Eden Gardens, Kolkata",,

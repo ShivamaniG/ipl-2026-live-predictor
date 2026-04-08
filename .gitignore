@@ -46,5 +46,13 @@ outputs/results/*
 # Live data (local runtime, not committed)
 data/live/api_cache.json
 
+# Environment variables (never commit)
+.env
+
+# Simulation script (local experiment)
+simulate_season.py
+
 # Streamlit secrets (never commit)
 .streamlit/secrets.toml
+
+CHANGELOG.md

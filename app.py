@@ -12,6 +12,9 @@ import json
 import glob
 from datetime import date, datetime
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import streamlit as st
 import pandas as pd
 
@@ -86,17 +89,23 @@ def load_prediction_history():
 
 
 def save_prediction_snapshot():
-    """Save today's prediction as a history snapshot."""
-    pred = load_predictions()
-    if not pred or "rankings" not in pred:
-        return
+    """Save today's tournament + match predictions as history snapshots."""
     os.makedirs(HISTORY_DIR, exist_ok=True)
-    snapshot = {}
-    for r in pred["rankings"]:
-        snapshot[r["team_id"]] = r["win_probability"]
-    path = os.path.join(HISTORY_DIR, f"{date.today()}.json")
-    with open(path, "w") as f:
-        json.dump(snapshot, f, indent=2)
+    today = str(date.today())
+
+    # Tournament rankings snapshot
+    pred = load_predictions()
+    if pred and "rankings" in pred:
+        snapshot = {}
+        for r in pred["rankings"]:
+            snapshot[r["team_id"]] = r["win_probability"]
+        with open(os.path.join(HISTORY_DIR, f"{today}.json"), "w") as f:
+            json.dump(snapshot, f, indent=2)
+
+    # Match predictions snapshot
+    match_df = load_match_predictions()
+    if match_df is not None:
+        match_df.to_csv(os.path.join(HISTORY_DIR, f"{today}_matches.csv"), index=False)
 
 
 def build_points_table(completed_df):
@@ -314,16 +323,115 @@ def page_predictor():
 
 def page_history():
     st.title("Prediction History")
-    st.write("How each team's win probability changed over time as real matches were added.")
+
+    # --- Section 1: Model Accuracy Tracker ---
+    st.subheader("Model Accuracy")
+    st.caption("How well did the model predict completed matches?")
+
+    match_df = load_match_predictions()
+    completed_df = load_completed()
+
+    if match_df is not None and len(completed_df) > 0:
+        # Build accuracy table from the EARLIEST snapshot that predicted each match
+        # If no historical snapshots, use current predictions
+        history_files = sorted(glob.glob(os.path.join(HISTORY_DIR, "*_matches.csv")))
+
+        # Load the earliest prediction for each match
+        earliest_predictions = {}
+        for f in history_files:
+            snap_df = pd.read_csv(f)
+            for _, row in snap_df.iterrows():
+                mn = int(row["Match"])
+                if mn not in earliest_predictions and row["Status"] == "Predicted":
+                    earliest_predictions[mn] = {
+                        "predicted_winner": row["Predicted Winner"],
+                        "probability": row["Win Probability"],
+                        "predicted_on": os.path.basename(f).replace("_matches.csv", ""),
+                    }
+
+        # Fall back to current predictions for matches without history
+        if match_df is not None:
+            for _, row in match_df.iterrows():
+                mn = int(row["Match"])
+                if mn not in earliest_predictions and row["Status"] == "Predicted":
+                    earliest_predictions[mn] = {
+                        "predicted_winner": row["Predicted Winner"],
+                        "probability": row["Win Probability"],
+                        "predicted_on": "current",
+                    }
+
+        # Compare predictions vs actual results
+        accuracy_rows = []
+        correct = 0
+        total = 0
+        for _, row in completed_df.iterrows():
+            mn = int(row["match_number"])
+            actual_winner = str(row.get("winner", ""))
+            if not actual_winner or actual_winner == "NR" or actual_winner not in ACTIVE_TEAMS_2026:
+                accuracy_rows.append({
+                    "Match": mn,
+                    "Home": row["team1"],
+                    "Away": row["team2"],
+                    "Predicted": "-",
+                    "Prob": "-",
+                    "Actual": "No Result",
+                    "Correct": "-",
+                })
+                continue
+
+            pred = earliest_predictions.get(mn)
+            if pred:
+                predicted = pred["predicted_winner"]
+                prob = pred["probability"]
+                is_correct = predicted == actual_winner
+                total += 1
+                if is_correct:
+                    correct += 1
+                accuracy_rows.append({
+                    "Match": mn,
+                    "Home": row["team1"],
+                    "Away": row["team2"],
+                    "Predicted": predicted,
+                    "Prob": prob,
+                    "Actual": actual_winner,
+                    "Correct": "Yes" if is_correct else "No",
+                })
+            else:
+                accuracy_rows.append({
+                    "Match": mn,
+                    "Home": row["team1"],
+                    "Away": row["team2"],
+                    "Predicted": "N/A",
+                    "Prob": "-",
+                    "Actual": actual_winner,
+                    "Correct": "-",
+                })
+
+        if accuracy_rows:
+            acc_df = pd.DataFrame(accuracy_rows)
+            st.dataframe(acc_df, use_container_width=True, hide_index=True)
+
+            if total > 0:
+                pct = correct / total * 100
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Correct", f"{correct}/{total}")
+                col2.metric("Accuracy", f"{pct:.1f}%")
+                col3.metric("Matches Tracked", total)
+    else:
+        st.info("No completed matches yet. Accuracy tracking starts after the first pipeline run.")
+
+    # --- Section 2: Tournament Prediction Trends ---
+    st.markdown("---")
+    st.subheader("Tournament Prediction Trends")
+    st.caption("How each team's win probability changed over time as real matches were added.")
 
     history = load_prediction_history()
     if len(history) < 2:
-        st.info("Need at least 2 days of data to show trends. History builds as you run the pipeline daily.")
+        st.info("Need at least 2 days of data to show trends. Run the pipeline daily to build history.")
         if len(history) == 1:
             st.write(f"First snapshot: {history[0]['date']}")
         return
 
-    # Build dataframe: rows = dates, columns = teams
     rows = []
     for h in history:
         row = {"Date": h["date"]}
