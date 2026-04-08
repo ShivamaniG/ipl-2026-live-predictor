@@ -88,7 +88,7 @@ python main.py --mode all
 # Option 1: Auto-fetch from API
 python main.py --mode live --api-key YOUR_CRICAPI_KEY
 
-# Option 2: Use the dashboard (recommended)
+# Option 2: Use the dashboard
 streamlit run app.py
 ```
 
@@ -98,12 +98,7 @@ streamlit run app.py
 streamlit run app.py
 ```
 
-Open http://localhost:8501. Public pages show predictions, points table, and match results. Admin panel lets you add results and run the pipeline from the UI.
-
-Set the admin password via environment variable:
-```bash
-export IPL_ADMIN_PASSWORD=your_secret_password
-```
+Opens at http://localhost:8501
 
 ## How It Works
 

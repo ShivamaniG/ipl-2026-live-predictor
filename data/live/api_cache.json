@@ -133,6 +133,30 @@
       "win_by_wickets": 6,
       "toss_winner": "Royal Challengers Bengaluru",
       "toss_choice": "field"
+    },
+    {
+      "date": "2026-04-06",
+      "team1_full": "Kolkata Knight Riders",
+      "team2_full": "Punjab Kings",
+      "winner_full": "",
+      "venue": "Eden Gardens, Kolkata",
+      "status_text": "Match abandoned due to rain, no result",
+      "win_by_runs": 0,
+      "win_by_wickets": 0,
+      "toss_winner": "Kolkata Knight Riders",
+      "toss_choice": "bat"
+    },
+    {
+      "date": "2026-04-07",
+      "team1_full": "Rajasthan Royals",
+      "team2_full": "Mumbai Indians",
+      "winner_full": "Rajasthan Royals",
+      "venue": "Barsapara Cricket Stadium, Guwahati",
+      "status_text": "Rajasthan Royals won by 27 runs (11 overs per side, rain‑affected)",
+      "win_by_runs": 27,
+      "win_by_wickets": 0,
+      "toss_winner": "Mumbai Indians",
+      "toss_choice": "field"
     }
   ]
 }
