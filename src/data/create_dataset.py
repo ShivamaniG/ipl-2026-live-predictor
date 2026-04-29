@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-from config import RAW_DIR, MATCHES_CSV, TEAMS_JSON, TEAM_ALIASES, BASE_DIR
+from config import RAW_DIR, MATCHES_CSV, TEAMS_JSON, TEAM_ALIASES, BASE_DIR, LAST_KNOWN_SEASON
 
 IPL_CSV = os.path.join(BASE_DIR, "IPL.csv")
 
@@ -264,6 +264,18 @@ def build_all_matches(return_format: str = "legacy"):
     print(f"Loading ball-by-ball data from {IPL_CSV}...")
     df = pd.read_csv(IPL_CSV, low_memory=False)
     print(f"  {len(df)} deliveries, {df['match_id'].nunique()} matches")
+
+    season_year = df["season"].map(SEASON_TO_YEAR)
+    season_year = season_year.fillna(df["year"]).astype(int)
+    before_rows = len(df)
+    before_matches = df["match_id"].nunique()
+    df = df[season_year <= LAST_KNOWN_SEASON].copy()
+    print(
+        f"  Training cutoff: kept seasons <= {LAST_KNOWN_SEASON} "
+        f"({len(df)} deliveries, {df['match_id'].nunique()} matches; "
+        f"excluded {before_rows - len(df)} deliveries, "
+        f"{before_matches - df['match_id'].nunique()} matches)"
+    )
 
     print("Extracting match-level summary...")
     matches = extract_matches(df)

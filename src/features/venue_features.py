@@ -10,7 +10,7 @@ import pandas as pd
 from functools import lru_cache
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-from config import BASE_DIR
+from config import BASE_DIR, LAST_KNOWN_SEASON
 
 IPL_CSV = os.path.join(BASE_DIR, "IPL.csv")
 
@@ -52,7 +52,11 @@ def _compute_venue_stats() -> dict:
 
     df = pd.read_csv(IPL_CSV, low_memory=False,
                      usecols=["match_id", "innings", "venue", "runs_total",
-                              "toss_winner", "match_won_by", "batting_team"])
+                              "toss_winner", "match_won_by", "batting_team",
+                              "season", "year"])
+    season_year = pd.to_numeric(df["season"], errors="coerce")
+    season_year = season_year.fillna(df["year"]).astype(int)
+    df = df[season_year <= LAST_KNOWN_SEASON].copy()
 
     # --- Average first-innings score per venue ---
     first_inns = df[df["innings"] == 1]

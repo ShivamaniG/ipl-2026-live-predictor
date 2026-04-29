@@ -29,7 +29,10 @@ logger = logging.getLogger(__name__)
 def _load_api_cache() -> dict:
     if os.path.exists(API_CACHE):
         with open(API_CACHE) as f:
-            return json.load(f)
+            cache = json.load(f)
+        if isinstance(cache, list):
+            return {"date": "", "calls_today": 0, "results": cache}
+        return cache
     return {"date": "", "calls_today": 0, "results": []}
 
 

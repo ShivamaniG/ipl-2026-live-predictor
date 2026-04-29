@@ -88,6 +88,20 @@ def load_prediction_history():
     return history
 
 
+def load_rolling_backtest_outputs():
+    match_path = os.path.join(RESULTS_DIR, "rolling_2026_match_accuracy.csv")
+    trend_path = os.path.join(RESULTS_DIR, "rolling_2026_winner_trends.csv")
+    summary_path = os.path.join(RESULTS_DIR, "rolling_2026_summary.json")
+
+    match_df = pd.read_csv(match_path) if os.path.exists(match_path) else None
+    trend_df = pd.read_csv(trend_path) if os.path.exists(trend_path) else None
+    summary = None
+    if os.path.exists(summary_path):
+        with open(summary_path) as f:
+            summary = json.load(f)
+    return match_df, trend_df, summary
+
+
 def save_prediction_snapshot():
     """Save today's tournament + match predictions as history snapshots."""
     os.makedirs(HISTORY_DIR, exist_ok=True)
@@ -106,6 +120,30 @@ def save_prediction_snapshot():
     match_df = load_match_predictions()
     if match_df is not None:
         match_df.to_csv(os.path.join(HISTORY_DIR, f"{today}_matches.csv"), index=False)
+
+
+def verified_completed_from_backtest(match_df):
+    if match_df is None or len(match_df) == 0:
+        return pd.DataFrame()
+    rows = []
+    for _, row in match_df.iterrows():
+        rows.append({
+            "match_number": int(row["match_number"]),
+            "date": row.get("date", ""),
+            "team1": row["team1"],
+            "team2": row["team2"],
+            "winner": row["actual_winner"],
+            "venue": row.get("venue", ""),
+        })
+    return pd.DataFrame(rows)
+
+
+def current_verified_state():
+    match_df, trend_df, summary = load_rolling_backtest_outputs()
+    completed_df = verified_completed_from_backtest(match_df)
+    if summary is None:
+        completed_df = load_completed()
+    return match_df, trend_df, summary, completed_df
 
 
 def build_points_table(completed_df):
@@ -209,24 +247,53 @@ TEAM_COLORS = {
 def page_overview():
     st.title("IPL 2026 Live Predictions")
 
-    completed_df = load_completed()
-    completed_count = len(completed_df)
-    remaining = 70 - completed_count
+    rolling_match_df, rolling_trend_df, summary, completed_df = current_verified_state()
+    completed_count = int(summary.get("processed_matches", len(completed_df))) if summary else len(completed_df)
+    scored = int(summary.get("scored_matches", completed_count)) if summary else completed_count
+    no_results = int(summary.get("no_result_matches", 0)) if summary else 0
+    remaining = max(70 - completed_count, 0)
 
-    st.metric("Matches Completed", f"{completed_count} / 70",
-              delta=f"{remaining} remaining")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Verified Results", f"{completed_count} / 70", delta=f"{remaining} remaining")
+    c2.metric("Scored Matches", scored)
+    c3.metric("No Results", no_results)
+    if summary:
+        c4.metric("Prediction Accuracy", f"{float(summary.get('accuracy', 0)):.1f}%")
+    else:
+        c4.metric("Prediction Accuracy", "-")
 
-    pred = load_predictions()
-    if pred and "rankings" in pred:
-        rankings = pred["rankings"]
-        winner = rankings[0]
-        st.success(f"Predicted Winner: **{winner['team_name']}** ({winner['win_probability']}%)")
+    if rolling_trend_df is not None and len(rolling_trend_df) > 0:
+        latest = rolling_trend_df.iloc[-1]
+        st.success(
+            f"Current Predicted Winner: **{latest['leader_name']}** "
+            f"({float(latest['leader_probability']):.2f}%)"
+        )
 
-        # Bar chart
-        chart_df = pd.DataFrame(rankings)
-        chart_df = chart_df.sort_values("win_probability", ascending=True)
-        st.bar_chart(chart_df.set_index("team_name")["win_probability"],
+        prob_cols = [
+            c for c in rolling_trend_df.columns
+            if c.endswith("_probability") and c != "leader_probability"
+        ]
+        chart_row = rolling_trend_df.iloc[-1]
+        chart_df = pd.DataFrame([
+            {
+                "team": TEAMS.get(c.replace("_probability", ""), c.replace("_probability", "")),
+                "win_probability": chart_row[c],
+            }
+            for c in prob_cols
+        ]).sort_values("win_probability", ascending=True)
+        st.bar_chart(chart_df.set_index("team")["win_probability"],
                      horizontal=True, height=400)
+    else:
+        pred = load_predictions()
+        if pred and "rankings" in pred:
+            rankings = pred["rankings"]
+            winner = rankings[0]
+            st.success(f"Predicted Winner: **{winner['team_name']}** ({winner['win_probability']}%)")
+
+            chart_df = pd.DataFrame(rankings)
+            chart_df = chart_df.sort_values("win_probability", ascending=True)
+            st.bar_chart(chart_df.set_index("team_name")["win_probability"],
+                         horizontal=True, height=400)
 
     # Points table
     if len(completed_df) > 0:
@@ -264,28 +331,58 @@ def page_overview():
 def page_matches():
     st.title("Match-by-Match Predictions")
 
+    rolling_match_df, _, summary = load_rolling_backtest_outputs()
+
     match_df = load_match_predictions()
-    if match_df is None:
-        st.warning("No match predictions found. Run the pipeline first.")
+    if match_df is not None:
+        # Filter
+        status_filter = st.selectbox("Filter", ["All", "Actual", "Predicted", "No Result"])
+        display_df = match_df
+        if status_filter != "All":
+            display_df = display_df[display_df["Status"] == status_filter]
+
+        st.dataframe(display_df, use_container_width=True, hide_index=True, height=500)
+
+        # Summary
+        if status_filter == "All":
+            actual = len(match_df[match_df["Status"] == "Actual"])
+            predicted = len(match_df[match_df["Status"] == "Predicted"])
+            nr = len(match_df[match_df["Status"] == "No Result"])
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Actual", actual)
+            col2.metric("Predicted", predicted)
+            col3.metric("No Result", nr)
+
+    st.markdown("---")
+    st.subheader("Verified Prediction Accuracy")
+    st.caption("Each row compares the model's pre-match pick with the actual result. No-result matches are excluded from accuracy.")
+
+    if rolling_match_df is None or summary is None:
+        st.info("No verified accuracy report found yet.")
         return
 
-    # Filter
-    status_filter = st.selectbox("Filter", ["All", "Actual", "Predicted", "No Result"])
-    if status_filter != "All":
-        match_df = match_df[match_df["Status"] == status_filter]
+    processed = int(summary.get("processed_matches", len(rolling_match_df)))
+    scored = int(summary.get("scored_matches", processed))
+    no_results = int(summary.get("no_result_matches", 0))
+    correct = int(summary.get("correct_predictions", 0))
+    accuracy = float(summary.get("accuracy", 0))
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Correct Picks", f"{correct}/{scored}")
+    c2.metric("Accuracy", f"{accuracy:.1f}%")
+    c3.metric("Verified Results", processed)
+    c4.metric("No Results", no_results)
 
-    st.dataframe(match_df, use_container_width=True, hide_index=True, height=600)
-
-    # Summary
-    if status_filter == "All":
-        full_df = load_match_predictions()
-        actual = len(full_df[full_df["Status"] == "Actual"])
-        predicted = len(full_df[full_df["Status"] == "Predicted"])
-        nr = len(full_df[full_df["Status"] == "No Result"])
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Actual", actual)
-        col2.metric("Predicted", predicted)
-        col3.metric("No Result", nr)
+    cols = [
+        "match_number", "date", "team1", "team2",
+        "predicted_winner", "actual_winner", "correct", "confidence",
+        "team1_win_probability", "team2_win_probability",
+    ]
+    st.dataframe(
+        rolling_match_df[[c for c in cols if c in rolling_match_df.columns]],
+        use_container_width=True,
+        hide_index=True,
+        height=420,
+    )
 
 
 def page_predictor():
@@ -325,125 +422,72 @@ def page_history():
     st.title("Prediction History")
 
     # --- Section 1: Model Accuracy Tracker ---
-    st.subheader("Model Accuracy")
-    st.caption("How well did the model predict completed matches?")
+    st.subheader("Verified Accuracy")
+    st.caption("Only completed matches with a winner are scored. Abandoned/no-result matches are counted separately.")
 
-    match_df = load_match_predictions()
-    completed_df = load_completed()
-
-    if match_df is not None and len(completed_df) > 0:
-        # Build accuracy table from the EARLIEST snapshot that predicted each match
-        # If no historical snapshots, use current predictions
-        history_files = sorted(glob.glob(os.path.join(HISTORY_DIR, "*_matches.csv")))
-
-        # Load the earliest prediction for each match
-        earliest_predictions = {}
-        for f in history_files:
-            snap_df = pd.read_csv(f)
-            for _, row in snap_df.iterrows():
-                mn = int(row["Match"])
-                if mn not in earliest_predictions and row["Status"] == "Predicted":
-                    earliest_predictions[mn] = {
-                        "predicted_winner": row["Predicted Winner"],
-                        "probability": row["Win Probability"],
-                        "predicted_on": os.path.basename(f).replace("_matches.csv", ""),
-                    }
-
-        # Fall back to current predictions for matches without history
-        if match_df is not None:
-            for _, row in match_df.iterrows():
-                mn = int(row["Match"])
-                if mn not in earliest_predictions and row["Status"] == "Predicted":
-                    earliest_predictions[mn] = {
-                        "predicted_winner": row["Predicted Winner"],
-                        "probability": row["Win Probability"],
-                        "predicted_on": "current",
-                    }
-
-        # Compare predictions vs actual results
-        accuracy_rows = []
-        correct = 0
-        total = 0
-        for _, row in completed_df.iterrows():
-            mn = int(row["match_number"])
-            actual_winner = str(row.get("winner", ""))
-            if not actual_winner or actual_winner == "NR" or actual_winner not in ACTIVE_TEAMS_2026:
-                accuracy_rows.append({
-                    "Match": mn,
-                    "Home": row["team1"],
-                    "Away": row["team2"],
-                    "Predicted": "-",
-                    "Prob": "-",
-                    "Actual": "No Result",
-                    "Correct": "-",
-                })
-                continue
-
-            pred = earliest_predictions.get(mn)
-            if pred:
-                predicted = pred["predicted_winner"]
-                prob = pred["probability"]
-                is_correct = predicted == actual_winner
-                total += 1
-                if is_correct:
-                    correct += 1
-                accuracy_rows.append({
-                    "Match": mn,
-                    "Home": row["team1"],
-                    "Away": row["team2"],
-                    "Predicted": predicted,
-                    "Prob": prob,
-                    "Actual": actual_winner,
-                    "Correct": "Yes" if is_correct else "No",
-                })
-            else:
-                accuracy_rows.append({
-                    "Match": mn,
-                    "Home": row["team1"],
-                    "Away": row["team2"],
-                    "Predicted": "N/A",
-                    "Prob": "-",
-                    "Actual": actual_winner,
-                    "Correct": "-",
-                })
-
-        if accuracy_rows:
-            acc_df = pd.DataFrame(accuracy_rows)
-            st.dataframe(acc_df, use_container_width=True, hide_index=True)
-
-            if total > 0:
-                pct = correct / total * 100
-                col1, col2, col3 = st.columns(3)
-                col1.metric("Correct", f"{correct}/{total}")
-                col2.metric("Accuracy", f"{pct:.1f}%")
-                col3.metric("Matches Tracked", total)
+    rolling_match_df, rolling_trend_df, rolling_summary = load_rolling_backtest_outputs()
+    if rolling_summary:
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Correct Picks", f"{rolling_summary.get('correct_predictions', 0)}/{rolling_summary.get('scored_matches', 0)}")
+        c2.metric("Accuracy", f"{float(rolling_summary.get('accuracy', 0)):.1f}%")
+        c3.metric("Verified Results", rolling_summary.get("processed_matches", 0))
+        c4.metric("No Results", rolling_summary.get("no_result_matches", 0))
     else:
-        st.info("No completed matches yet. Accuracy tracking starts after the first pipeline run.")
+        st.info("No verified accuracy report found yet.")
 
     # --- Section 2: Tournament Prediction Trends ---
     st.markdown("---")
     st.subheader("Tournament Prediction Trends")
     st.caption("How each team's win probability changed over time as real matches were added.")
 
+    if rolling_trend_df is not None and len(rolling_trend_df) > 0:
+        st.write("Winner movement after each verified result:")
+
+        leader_cols = [
+            "after_match", "date", "matches_completed",
+            "leader", "leader_name", "leader_probability",
+        ]
+        st.dataframe(
+            rolling_trend_df[[c for c in leader_cols if c in rolling_trend_df.columns]],
+            use_container_width=True,
+            hide_index=True,
+            height=300,
+        )
+
+        prob_cols = [
+            c for c in rolling_trend_df.columns
+            if c.endswith("_probability") and c != "leader_probability"
+        ]
+        if prob_cols:
+            chart_df = rolling_trend_df[["after_match"] + prob_cols].copy()
+            chart_df = chart_df.rename(columns={c: c.replace("_probability", "") for c in prob_cols})
+            chart_df = chart_df.set_index("after_match")
+            st.line_chart(chart_df, height=400)
+
+        if rolling_summary:
+            st.caption(
+                f"Latest leader: {rolling_summary.get('latest_leader', '-')} "
+                f"({rolling_summary.get('latest_leader_probability', '-')}%)"
+            )
+    else:
+        st.info("No winner movement report found yet.")
+
     history = load_prediction_history()
-    if len(history) < 2:
-        st.info("Need at least 2 days of data to show trends. Run the pipeline daily to build history.")
-        if len(history) == 1:
-            st.write(f"First snapshot: {history[0]['date']}")
-        return
+    if len(history) >= 2:
+        st.markdown("---")
+        st.subheader("Saved Daily Snapshots")
+        rows = []
+        for h in history:
+            row = {"Date": h["date"]}
+            for team in ACTIVE_TEAMS_2026:
+                row[TEAMS.get(team, team)] = h.get(team, 0)
+            rows.append(row)
 
-    rows = []
-    for h in history:
-        row = {"Date": h["date"]}
-        for team in ACTIVE_TEAMS_2026:
-            row[TEAMS.get(team, team)] = h.get(team, 0)
-        rows.append(row)
+        df = pd.DataFrame(rows)
+        df["Date"] = pd.to_datetime(df["Date"])
+        df = df.set_index("Date")
 
-    df = pd.DataFrame(rows)
-    df["Date"] = pd.to_datetime(df["Date"])
-    df = df.set_index("Date")
-
-    st.line_chart(df, height=400)
+        st.line_chart(df, height=400)
 
 
 # ---------------------------------------------------------------------------
