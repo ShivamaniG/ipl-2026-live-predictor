@@ -56,3 +56,5 @@ simulate_season.py
 .streamlit/secrets.toml
 
 CHANGELOG.md
+
+IPL.csvdata/live/completed_2026.csv 
