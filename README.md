@@ -69,18 +69,6 @@ Note: Accuracy is computed only on completed matches with a winner. No-result ma
 
 ---
 
-## Dashboard Preview
-
-### Live Predictions Overview
-
-![Live Predictions Overview](images/live-predictions-overview.png)
-
-### Match-by-Match Prediction
-
-![Match by Match Prediction](images/match-by-match-prediction.png)
-
----
-
 ## Model Performance
 
 | Model          | CV Accuracy | Test Accuracy | Test AUC |
